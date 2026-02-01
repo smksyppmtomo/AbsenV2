@@ -1,0 +1,885 @@
+body {
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.page {
+  display: none;
+}
+
+.page.active {
+  display: block;
+}
+
+.gradient-bg {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
+}
+
+/* Dark mode styles */
+body.dark-mode {
+  background: linear-gradient(to bottom right, #0f172a, #1e293b, #334155);
+}
+
+body.dark-mode .card-modern {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+body.dark-mode .gradient-bg {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+}
+
+body.dark-mode .text-slate-800 {
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .text-slate-700 {
+  color: #cbd5e1 !important;
+}
+
+body.dark-mode .text-slate-600 {
+  color: #94a3b8 !important;
+}
+
+body.dark-mode .text-slate-500 {
+  color: #64748b !important;
+}
+
+body.dark-mode .bg-white {
+  background-color: #1e293b !important;
+}
+
+body.dark-mode .border-slate-200 {
+  border-color: #334155 !important;
+}
+
+body.dark-mode .bg-slate-50,
+body.dark-mode .bg-slate-100 {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+}
+
+body.dark-mode .from-slate-50,
+body.dark-mode .to-slate-100 {
+  --tw-gradient-from: #1e293b !important;
+  --tw-gradient-to: #334155 !important;
+}
+
+body.dark-mode .bg-slate-200,
+body.dark-mode .bg-slate-300 {
+  background-color: #334155 !important;
+}
+
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+  background-color: #0f172a !important;
+  color: #e2e8f0 !important;
+  border-color: #334155 !important;
+}
+
+body.dark-mode input::placeholder,
+body.dark-mode select::placeholder,
+body.dark-mode textarea::placeholder {
+  color: #64748b !important;
+}
+
+body.dark-mode .status-option {
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-color: #475569;
+}
+
+/* Glassmorphism untuk modal di dark mode */
+body.dark-mode #edit-modal > div,
+body.dark-mode #delete-modal > div,
+body.dark-mode #success-modal > div,
+body.dark-mode #submit-confirmation-modal > div,
+body.dark-mode #password-modal > div {
+  background: rgba(30, 41, 59, 0.9) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode #camera-placeholder,
+body.dark-mode #location-loading {
+  background: linear-gradient(to bottom right, #1e293b, #334155) !important;
+  border-color: #475569 !important;
+}
+
+body.dark-mode ::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #64748b, #475569);
+}
+
+.card-modern {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+body.dark-mode .card-modern {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-gradient {
+  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+}
+
+.status-option {
+  background: rgba(248, 250, 252, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.status-option.selected {
+  border-color: #1e293b;
+  background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+  box-shadow: 0 4px 15px rgba(30, 41, 59, 0.2);
+}
+
+.status-option.masuk.selected {
+  background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+}
+
+.status-option.pulang.selected {
+  background: linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%);
+  border-color: #f59e0b;
+}
+
+.status-option.dinas.selected {
+  background: linear-gradient(135deg, #c084fc 0%, #a78bfa 100%);
+  border-color: #9333ea;
+}
+
+.camera-preview {
+  transform: scaleX(-1);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #475569, #334155);
+  border-radius: 4px;
+}
+
+.map-container {
+  z-index: 1;
+}
+
+.toast {
+  animation:
+    toastIn 0.4s ease-out,
+    toastOut 0.4s ease-in 2.6s forwards;
+}
+
+@keyframes toastIn {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toastOut {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-10px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(10px);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes successPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+@keyframes checkmark {
+  0% {
+    stroke-dashoffset: 100;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.progress-step {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-step.active {
+  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+  transform: scale(1.1);
+}
+
+.progress-step.completed {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+.slide-down {
+  animation: slideDown 0.5s ease-out;
+}
+
+.scale-in {
+  animation: scaleIn 0.4s ease-out;
+}
+
+.status-option {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.status-option:hover {
+  transform: translateY(-4px);
+}
+
+.status-option.selected {
+  animation: scaleIn 0.3s ease-out;
+}
+
+/* Pull to Refresh */
+.pull-to-refresh-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.pull-to-refresh-indicator {
+  position: absolute;
+  top: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: top 0.3s ease;
+  z-index: 100;
+}
+
+body.dark-mode .pull-to-refresh-indicator {
+  background: #1e293b;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.pull-to-refresh-indicator.pulling {
+  top: 20px;
+}
+
+.pull-to-refresh-indicator.refreshing {
+  top: 20px;
+}
+
+.pull-icon {
+  transition: transform 0.3s ease;
+}
+
+.pull-icon.rotate {
+  transform: rotate(180deg);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+}
+
+.empty-state-icon {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 1.5rem;
+  opacity: 0.6;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.empty-state-icon {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Success Animation */
+.success-checkmark {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: checkmark 0.6s ease-out forwards;
+}
+
+.loading-overlay {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.time-display {
+  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Confetti Animation */
+.confetti {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  top: -10px;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotateZ(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotateZ(720deg);
+    opacity: 0;
+  }
+}
+
+.confetti-particle {
+  animation: confetti-fall linear forwards;
+}
+
+.icon-wrapper {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  position: relative;
+}
+
+.icon-wrapper::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(135deg, #f59e0b, #fb923c);
+  border-radius: inherit;
+  z-index: -1;
+  opacity: 0.5;
+  filter: blur(8px);
+}
+
+/* Base mobile-first responsive */
+.app-container {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Extra small devices (phones, 320px and up) */
+@media (min-width: 320px) {
+  .card-modern {
+    padding: 1rem;
+    border-radius: 16px;
+  }
+
+  .status-option {
+    padding: 0.75rem;
+  }
+
+  .status-option .text-center div {
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .status-option .text-center svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .status-option .text-center p {
+    font-size: 0.7rem;
+  }
+
+  .camera-preview,
+  #captured-photo,
+  #camera-placeholder {
+    height: 200px;
+  }
+
+  #map {
+    height: 180px;
+  }
+
+  .icon-wrapper {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .icon-wrapper svg {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  #current-time {
+    font-size: 1.75rem;
+  }
+}
+
+/* Small devices (landscape phones, 480px and up) */
+@media (min-width: 480px) {
+  .card-modern {
+    padding: 1.25rem;
+    border-radius: 20px;
+  }
+
+  .status-option {
+    padding: 1rem;
+  }
+
+  .status-option .text-center div {
+    width: 3rem;
+    height: 3rem;
+    margin-bottom: 0.625rem;
+  }
+
+  .status-option .text-center svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .status-option .text-center p {
+    font-size: 0.8rem;
+  }
+
+  .camera-preview,
+  #captured-photo,
+  #camera-placeholder {
+    height: 240px;
+  }
+
+  #map {
+    height: 200px;
+  }
+
+  .icon-wrapper {
+    width: 4rem;
+    height: 4rem;
+  }
+
+  .icon-wrapper svg {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  #current-time {
+    font-size: 2rem;
+  }
+}
+
+/* Medium devices (tablets, 640px and up) */
+@media (min-width: 640px) {
+  .card-modern {
+    padding: 1.5rem;
+    border-radius: 24px;
+  }
+
+  .status-option {
+    padding: 1.25rem;
+  }
+
+  .status-option .text-center div {
+    width: 3.5rem;
+    height: 3.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .status-option .text-center svg {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .status-option .text-center p {
+    font-size: 0.875rem;
+  }
+
+  .camera-preview,
+  #captured-photo,
+  #camera-placeholder {
+    height: 280px;
+  }
+
+  #map {
+    height: 220px;
+  }
+
+  .icon-wrapper {
+    width: 4.5rem;
+    height: 4.5rem;
+  }
+
+  .icon-wrapper svg {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  #current-time {
+    font-size: 2.25rem;
+  }
+}
+
+/* Large devices (desktops, 768px and up) */
+@media (min-width: 768px) {
+  .card-modern {
+    padding: 1.5rem;
+  }
+
+  .status-option {
+    padding: 1.5rem;
+  }
+
+  .status-option .text-center div {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .status-option .text-center svg {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .status-option .text-center p {
+    font-size: 0.875rem;
+  }
+
+  .camera-preview,
+  #captured-photo,
+  #camera-placeholder {
+    height: 320px;
+  }
+
+  #map {
+    height: 240px;
+  }
+
+  #current-time {
+    font-size: 2.5rem;
+  }
+}
+
+/* Extra large devices (large desktops, 1024px and up) */
+@media (min-width: 1024px) {
+  .app-container {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .card-modern {
+    padding: 2rem;
+  }
+
+  .status-option {
+    padding: 1.75rem;
+  }
+
+  .status-option .text-center div {
+    width: 4rem;
+    height: 4rem;
+  }
+
+  .status-option .text-center svg {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .status-option .text-center p {
+    font-size: 1rem;
+  }
+
+  .camera-preview,
+  #captured-photo,
+  #camera-placeholder {
+    height: 360px;
+  }
+
+  #map {
+    height: 280px;
+  }
+
+  .icon-wrapper {
+    width: 5rem;
+    height: 5rem;
+  }
+
+  .icon-wrapper svg {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  #current-time {
+    font-size: 2.5rem;
+  }
+}
+
+/* 2XL devices (larger desktops, 1280px and up) */
+@media (min-width: 1280px) {
+  .app-container {
+    max-width: 640px;
+  }
+
+  .card-modern {
+    padding: 2.25rem;
+  }
+
+  .camera-preview,
+  #captured-photo,
+  #camera-placeholder {
+    height: 400px;
+  }
+
+  #map {
+    height: 300px;
+  }
+}
+
+/* Ultra wide screens */
+@media (min-width: 1536px) {
+  .app-container {
+    max-width: 680px;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (orientation: landscape) and (max-height: 500px) {
+  .camera-preview,
+  #captured-photo,
+  #camera-placeholder {
+    height: 220px;
+  }
+
+  #map {
+    height: 180px;
+  }
+
+  .card-modern {
+    padding: 1rem;
+  }
+
+  .status-option {
+    padding: 0.75rem;
+  }
+}
+
+/* Text scaling for smaller devices */
+@media (max-width: 360px) {
+  html {
+    font-size: 14px;
+  }
+
+  .card-modern h2,
+  .card-modern h3 {
+    font-size: 1.25rem;
+  }
+
+  .card-modern .text-lg {
+    font-size: 1rem;
+  }
+
+  #current-time {
+    font-size: 1.5rem;
+  }
+
+  .status-option .text-center div {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .status-option .text-center svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  .status-option .text-center p {
+    font-size: 0.65rem;
+  }
+}
+
+/* Touch target improvements for mobile */
+@media (hover: none) and (pointer: coarse) {
+  button,
+  select,
+  input,
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .status-option {
+    min-height: 100px;
+  }
+}
+
+/* Particle Background */
+#particles-js {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Ensure content is above particles */
+#app {
+  position: relative;
+  z-index: 1;
+}
+
+/* Parallax Scrolling */
+.parallax-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.parallax-layer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.1s ease-out;
+}
+
+.parallax-bg {
+  transform: translateY(0);
+}
+
+/* Quote of the Day */
+.quote-card {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, rgba(251, 146, 60, 0.1) 100%);
+  border-left: 4px solid #f97316;
+  animation: slideInFromLeft 0.8s ease-out;
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.quote-icon {
+  opacity: 0.15;
+  font-size: 4rem;
+  line-height: 1;
+  font-family: Georgia, serif;
+}
+@view-transition {
+  navigation: auto;
+}
