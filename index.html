@@ -1,0 +1,978 @@
+<!doctype html>
+<html lang="id" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Absensi SMK YPPM TOMO</title>
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#1e293b" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Absensi YPPM" />
+    <meta name="description" content="Aplikasi Absensi Guru dan Staff SMK YPPM TOMO" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <!-- Favicon & Icons -->
+    <link rel="icon" type="image/png" href="foto/logo.png" />
+    <link class="apple-touch-icon" href="foto/logo.png" />
+    <!-- PWA Manifest yang diperbaiki sehingga 100% Valid dan Dapat Di-install Native ala YouTube/GitHub -->
+    <link
+      rel="manifest"
+      href="data:application/json;base64,eyJuYW1lIjoiQWJzZW5zaSBTTUsgWVBQTSBUT01PIiwic2hvcnRfbmFtZSI6IkFic2Vuc2kgWVBQTSIsImRlc2NyaXB0aW9uIjoiQXBsaWthc2kgQWJzZW5zaSBHdXJ1IGRhbiBTdGFmZiBTTUsgWVBQTSBUT01PIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiMxZTI5M2IiLCJ0eXBlIjoiYXBwbGljYXRpb24vbWFuaWZlc3QranNvbiIsInRoZW1lX2NvbG9yIjoiIzFlMjkzYiIsIm9yaWVudGF0aW9uIjoicG9ydHJhaXQiLCJpY29ucyI6W3sic3JjIjoiaHR0cHM6Ly9paWxpLmlvL0tqSUtNSjkucG5nIiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3BuZyIsInB1cnBvc2UiOiJhbnkifSx7InNyYyI6Imh0dHBzOi8vaWlsaS5vL0tqSUtNSjkucG5nIiwic2l6ZXMiOiI1MTJ4NTEyIiwidHlwZSI6ImltYWdlL3BuZyIsInB1cnBvc2UiOiJtYXNrYWJsZSJ9XX0="
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Leaflet CSS for Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Particles.js for Background Animation -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="h-full bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200">
+    <!-- Particle Background -->
+    <div id="particles-js"></div>
+    <!-- Initial Loading Screen -->
+    <div id="initial-loading" class="fixed inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 z-[200] flex items-center justify-center">
+      <div class="text-center">
+        <div class="relative mb-8 mx-auto w-24 h-24">
+          <div class="w-24 h-24 border-4 border-orange-500/30 rounded-full"></div>
+          <div class="w-24 h-24 border-4 border-orange-500 border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
+        </div>
+        <h1 class="text-white text-3xl font-black mb-2">Absensi SMK YPPM TOMO</h1>
+        <p class="text-slate-300 text-lg font-medium">Memuat aplikasi...</p>
+      </div>
+    </div>
+
+    <div id="app" class="h-full overflow-auto pull-to-refresh-container">
+      <!-- Pull to Refresh Indicator -->
+      <div id="pull-to-refresh-indicator" class="pull-to-refresh-indicator">
+        <svg id="pull-icon" class="w-8 h-8 text-orange-500 pull-icon" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <svg id="pull-spinner" class="w-8 h-8 text-orange-500 hidden" style="animation: spin 1s linear infinite" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+        </svg>
+      </div>
+      <!-- Loading Overlay -->
+      <div id="loading-overlay" class="fixed inset-0 bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-md z-[100] hidden loading-overlay">
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+          <div class="relative mb-6 mx-auto w-20 h-20">
+            <div class="w-20 h-20 border-4 border-orange-500/30 rounded-full"></div>
+            <div class="w-20 h-20 border-4 border-orange-500 border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
+          </div>
+          <p class="text-white text-lg font-bold mb-2">Memuat Data...</p>
+          <p class="text-slate-300 text-sm font-medium">Mohon tunggu sebentar</p>
+        </div>
+      </div>
+      <!-- Toast Container -->
+      <div id="toast-container" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50"></div>
+
+      <!-- Header -->
+      <header class="gradient-bg text-white shadow-2xl sticky top-0 z-30 backdrop-blur-lg bg-slate-800/90 parallax-container">
+        <div class="parallax-layer parallax-bg"></div>
+        <div class="max-w-lg mx-auto px-5 py-5 relative z-10">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="relative">
+                <img
+                  src="foto/logo.png"
+                  alt="Logo SMK YPPM TOMO"
+                  class="w-14 h-14 rounded-2xl shadow-2xl bg-white p-1.5"
+                  loading="lazy"
+                  onerror="
+                    this.style.background = '#ffffff';
+                    this.alt = 'Logo';
+                  "
+                />
+                <div class="absolute -inset-1 bg-white/30 rounded-2xl blur-md"></div>
+              </div>
+              <div>
+                <h1 id="header-title" class="font-bold text-xl tracking-tight">Absensi</h1>
+                <p id="header-school" class="text-sm text-slate-100 font-medium">SMK YPPM TOMO</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <!-- Tombol Install PWA ala YouTube (Hanya tampil jika PWA terdeteksi bisa diinstal) -->
+              <button
+                id="install-pwa-btn"
+                onclick="triggerInstall()"
+                class="bg-orange-500 hover:bg-orange-600 p-2.5 rounded-xl transition backdrop-blur-sm flex items-center justify-center gap-1.5 text-xs font-bold shadow-lg hidden"
+                title="Pasang Aplikasi"
+              >
+                <svg class="w-5 h-5 text-white animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                <span class="hidden sm:inline">Pasang</span>
+              </button>
+
+              <button
+                id="dark-mode-toggle"
+                onclick="toggleDarkMode()"
+                class="bg-white/20 hover:bg-white/30 p-2.5 rounded-xl transition backdrop-blur-sm flex items-center justify-center"
+                title="Toggle Dark Mode"
+              >
+                <svg id="dark-mode-icon-sun" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                  />
+                </svg>
+                <svg id="dark-mode-icon-moon" class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              </button>
+              <button onclick="promptAdminPassword()" class="bg-white/20 hover:bg-white/30 p-2.5 rounded-xl transition backdrop-blur-sm flex items-center justify-center" title="Admin Panel">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                  />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Attendance Page -->
+      <div id="page-attendance" class="page active">
+        <div class="max-w-lg mx-auto px-5 py-8 space-y-8">
+          <!-- Progress Indicator -->
+          <div class="card-modern p-6 sticky top-20 z-20 backdrop-blur-xl bg-white/80">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex-1">
+                <div class="flex items-center gap-2">
+                  <div
+                    id="progress-step-1"
+                    class="progress-step active w-10 h-10 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white flex items-center justify-center font-bold text-sm shadow-lg transition-all duration-300"
+                  >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <div class="flex-1 h-1 bg-slate-200 rounded-full overflow-hidden">
+                    <div id="progress-bar-1" class="h-full bg-gradient-to-r from-orange-500 to-orange-600 transition-all duration-500 w-0"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center gap-2">
+                  <div
+                    id="progress-step-2"
+                    class="progress-step w-10 h-10 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center font-bold text-sm shadow-sm transition-all duration-300"
+                  >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2.5"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                      />
+                    </svg>
+                  </div>
+                  <div class="flex-1 h-1 bg-slate-200 rounded-full overflow-hidden">
+                    <div id="progress-bar-2" class="h-full bg-gradient-to-r from-orange-500 to-orange-600 transition-all duration-500 w-0"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center gap-2">
+                  <div
+                    id="progress-step-3"
+                    class="progress-step w-10 h-10 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center font-bold text-sm shadow-sm transition-all duration-300"
+                  >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2.5"
+                        d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                      />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <div class="flex-1 h-1 bg-slate-200 rounded-full overflow-hidden">
+                    <div id="progress-bar-3" class="h-full bg-gradient-to-r from-orange-500 to-orange-600 transition-all duration-500 w-0"></div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div
+                  id="progress-step-4"
+                  class="progress-step w-10 h-10 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center font-bold text-sm shadow-sm transition-all duration-300"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div class="flex justify-between text-xs font-semibold text-slate-600 px-1">
+              <span class="w-10 text-center">Nama</span> <span class="w-10 text-center">Status</span> <span class="w-10 text-center">Foto</span> <span class="w-10 text-center">Siap</span>
+            </div>
+          </div>
+
+          <!-- Quote of the Day -->
+          <div class="quote-card card-modern p-6 relative overflow-hidden">
+            <div class="quote-icon absolute top-2 left-4 text-orange-500">"</div>
+            <div class="relative z-10">
+              <div class="flex items-start gap-3 mb-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <p class="text-xs text-orange-600 font-semibold uppercase tracking-wide mb-1">💭 Quote of the Day</p>
+                  <p id="quote-text" class="text-slate-700 font-semibold text-base leading-relaxed italic mb-2"></p>
+                  <p id="quote-author" class="text-slate-500 text-sm font-medium"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Automatic Slideshow / Image Carousel -->
+          <div class="card-modern p-5 overflow-hidden relative transition-all duration-300">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <div class="flex-1">
+                <p class="text-xs text-orange-600 font-semibold uppercase tracking-wide mb-0.5">📸 Galeri Kegiatan</p>
+                <p class="text-slate-800 font-bold text-sm">SMK YPPM TOMO</p>
+              </div>
+            </div>
+
+            <!-- Slide Container - Tinggi Dinamis, Sentuhan Lebih Mantap, Latar Belakang Gelap Netral -->
+            <div class="relative w-full overflow-hidden rounded-2xl h-64 sm:h-80 md:h-96 shadow-md bg-slate-950">
+              <!-- Carousel Track - Ditambahkan flex-nowrap agar foto tidak meluber ke slide berikutnya -->
+              <div id="carousel-track" class="flex flex-row flex-nowrap transition-transform duration-700 ease-in-out h-full w-full cursor-grab active:cursor-grabbing">
+                <!-- Slides (Menggunakan object-cover dan w-full min-w-full agar 1 foto mengisi seluruh container secara presisi) -->
+                <div class="w-full min-w-full h-full flex-shrink-0 bg-slate-950 flex items-center justify-center overflow-hidden">
+                  <img
+                    src="foto/foto1.jpeg"
+                    alt="Kegiatan YPPM Tomo 1"
+                    class="w-full h-full object-cover"
+                    loading="lazy"
+                    onerror="this.src = 'https://placehold.co/600x400/1e293b/ffffff?text=Galeri+1'"
+                  />
+                </div>
+                <div class="w-full min-w-full h-full flex-shrink-0 bg-slate-950 flex items-center justify-center overflow-hidden">
+                  <img
+                    src="foto/foto2.jpeg"
+                    alt="Kegiatan YPPM Tomo 2"
+                    class="w-full h-full object-cover"
+                    loading="lazy"
+                    onerror="this.src = 'https://placehold.co/600x400/1e293b/ffffff?text=Galeri+2'"
+                  />
+                </div>
+                <div class="w-full min-w-full h-full flex-shrink-0 bg-slate-950 flex items-center justify-center overflow-hidden">
+                  <img
+                    src="foto/foto7.jpeg"
+                    alt="Kegiatan YPPM Tomo 3"
+                    class="w-full h-full object-cover"
+                    loading="lazy"
+                    onerror="this.src = 'https://placehold.co/600x400/1e293b/ffffff?text=Galeri+3'"
+                  />
+                </div>
+                <div class="w-full min-w-full h-full flex-shrink-0 bg-slate-950 flex items-center justify-center overflow-hidden">
+                  <img
+                    src="foto/foto4.jpeg"
+                    alt="Kegiatan YPPM Tomo 4"
+                    class="w-full h-full object-cover"
+                    loading="lazy"
+                    onerror="this.src = 'https://placehold.co/600x400/1e293b/ffffff?text=Galeri+4'"
+                  />
+                </div>
+                <div class="w-full min-w-full h-full flex-shrink-0 bg-slate-950 flex items-center justify-center overflow-hidden">
+                  <img
+                    src="foto/foto5.jpeg"
+                    alt="Kegiatan YPPM Tomo 5"
+                    class="w-full h-full object-cover"
+                    loading="lazy"
+                    onerror="this.src = 'https://placehold.co/600x400/1e293b/ffffff?text=Galeri+5'"
+                  />
+                </div>
+                <div class="w-full min-w-full h-full flex-shrink-0 bg-slate-950 flex items-center justify-center overflow-hidden">
+                  <img
+                    src="foto/foto6.jpeg"
+                    alt="Kegiatan YPPM Tomo 6"
+                    class="w-full h-full object-cover"
+                    loading="lazy"
+                    onerror="this.src = 'https://placehold.co/600x400/1e293b/ffffff?text=Galeri+6'"
+                  />
+                </div>
+              </div>
+
+              <!-- Indicator Bullets -->
+              <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-10" id="carousel-indicators">
+                <span class="w-2.5 h-2.5 rounded-full bg-white/50 cursor-pointer transition-all duration-300" data-slide="0"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-white/50 cursor-pointer transition-all duration-300" data-slide="1"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-white/50 cursor-pointer transition-all duration-300" data-slide="2"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-white/50 cursor-pointer transition-all duration-300" data-slide="3"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-white/50 cursor-pointer transition-all duration-300" data-slide="4"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-white/50 cursor-pointer transition-all duration-300" data-slide="5"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Date Time Card -->
+          <div class="card-modern p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-slate-300/30 to-slate-200/30 rounded-full blur-3xl"></div>
+            <div class="relative flex flex-col gap-4">
+              <div class="flex items-center justify-between gap-4">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-2">
+                    <p id="greeting-display" class="text-orange-600 dark:text-orange-400 text-xs sm:text-sm font-black tracking-wide uppercase">Selamat Datang</p>
+                  </div>
+                  <p id="current-date" class="text-slate-700 font-semibold mb-1"></p>
+                  <p id="current-time" class="text-3xl sm:text-4xl font-black time-display"></p>
+                </div>
+                <div
+                  class="icon-wrapper w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center shadow-md bg-white dark:bg-slate-800 p-0.5 border border-slate-100 dark:border-slate-700"
+                >
+                  <svg id="analog-clock" class="w-full h-full" viewbox="0 0 100 100">
+                    <defs>
+                      <filter id="clock-shadow" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-opacity="0.1" />
+                      </filter>
+                    </defs>
+                    <circle cx="50" cy="50" r="46" class="fill-slate-50 dark:fill-slate-900 stroke-slate-200 dark:stroke-slate-700" stroke-width="1.5" />
+                    <line x1="50" y1="8" x2="50" y2="13" class="stroke-slate-800 dark:stroke-slate-200" stroke-width="2" stroke-linecap="round" />
+                    <line x1="92" y1="50" x2="87" y2="50" class="stroke-slate-800 dark:stroke-slate-200" stroke-width="2" stroke-linecap="round" />
+                    <line x1="50" y1="92" x2="50" y2="87" class="stroke-slate-800 dark:stroke-slate-200" stroke-width="2" stroke-linecap="round" />
+                    <line x1="8" y1="50" x2="13" y2="50" class="stroke-slate-800 dark:stroke-slate-200" stroke-width="2" stroke-linecap="round" />
+                    <line id="hour-hand" x1="50" y1="50" x2="50" y2="28" class="stroke-slate-800 dark:stroke-slate-100" stroke-width="3.5" stroke-linecap="round" />
+                    <line id="minute-hand" x1="50" y1="50" x2="50" y2="18" class="stroke-slate-500 dark:stroke-slate-400" stroke-width="2" stroke-linecap="round" />
+                    <line id="second-hand" x1="50" y1="56" x2="50" y2="12" class="stroke-orange-500" stroke-width="1" stroke-linecap="round" />
+                    <circle cx="50" cy="50" r="3" class="fill-slate-800 dark:fill-slate-100" />
+                    <circle cx="50" cy="50" r="1.2" class="fill-orange-500" />
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Weather Widget -->
+              <div id="weather-widget" class="mt-2 pt-4 border-t border-slate-200/50 dark:border-slate-700/50 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div id="weather-icon" class="text-3xl animate-bounce" style="animation-duration: 3s">🌦️</div>
+                  <div>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">Cuaca Terkini</p>
+                    <p id="weather-status" class="text-sm font-extrabold text-slate-800 dark:text-slate-200">Mendeteksi...</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p id="weather-temp" class="text-xl font-black text-orange-500">--°C</p>
+                  <p id="weather-loc" class="text-[11px] text-slate-500 dark:text-slate-400 font-black">YPPM Tomo</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Name Selection -->
+          <div class="card-modern p-6">
+            <label class="block mb-4">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-slate-600 to-slate-700 rounded-xl flex items-center justify-center shadow-lg">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <span class="text-lg font-bold text-slate-800">Pilih Nama Anda</span>
+              </div></label
+            >
+            <select
+              id="staff-select"
+              onchange="checkDuplicateAttendance()"
+              class="w-full p-4 border-3 border-slate-200 rounded-2xl focus:border-slate-500 focus:ring-4 focus:ring-slate-100 transition text-slate-700 font-semibold bg-white text-base shadow-sm"
+            >
+              <option value="">-- Pilih Nama Guru/Staff --</option>
+            </select>
+            <!-- Duplicate Attendance Warning -->
+            <div id="duplicate-warning" class="hidden mt-4 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-2xl p-4 animate-pulse">
+              <div class="flex items-start gap-3">
+                <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2.5"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <p class="font-bold text-amber-800 mb-1">⚠️ Perhatian: Sudah Ada Absensi Hari Ini</p>
+                  <p id="duplicate-details" class="text-sm text-amber-700 leading-relaxed font-medium"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Selection -->
+          <div class="card-modern p-6">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                  />
+                </svg>
+              </div>
+              <span class="text-lg font-bold text-slate-800">Status Kehadiran</span>
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+              <button onclick="selectStatus('masuk')" class="status-option masuk p-5 rounded-2xl hover:shadow-xl" data-status="masuk">
+                <div class="text-center">
+                  <div class="w-14 h-14 bg-slate-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    </svg>
+                  </div>
+                  <p class="font-bold text-slate-800 text-sm">Masuk</p>
+                </div>
+              </button>
+              <button onclick="selectStatus('pulang')" class="status-option pulang p-5 rounded-2xl hover:shadow-xl" data-status="pulang">
+                <div class="text-center">
+                  <div class="w-14 h-14 bg-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                  </div>
+                  <p class="font-bold text-slate-800 text-sm">Pulang</p>
+                </div>
+              </button>
+              <button onclick="selectStatus('dinas')" class="status-option dinas p-5 rounded-2xl hover:shadow-xl" data-status="dinas">
+                <div class="text-center">
+                  <div class="w-14 h-14 bg-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                  </div>
+                  <p class="font-bold text-slate-800 text-sm">Dinas</p>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Camera Section -->
+          <div class="card-modern p-6">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                  />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <span class="text-lg font-bold text-slate-800">Foto Selfie</span>
+            </div>
+            <div id="camera-container" class="relative">
+              <div
+                id="camera-placeholder"
+                class="w-full h-72 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl flex flex-col items-center justify-center p-6 border-3 border-dashed border-purple-200"
+              >
+                <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                  <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2.5"
+                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                    />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <p class="text-slate-700 font-bold mb-4 text-center">Klik tombol di bawah untuk membuka kamera</p>
+              </div>
+              <button
+                id="open-camera-btn"
+                onclick="startCamera()"
+                class="w-full mt-5 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-6 py-4 rounded-2xl font-bold transition shadow-lg flex items-center justify-center gap-2"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  />
+                </svg>
+                Buka Kamera
+              </button>
+              <video id="camera-video" class="w-full h-72 object-cover rounded-2xl hidden camera-preview shadow-lg"></video>
+              <canvas id="camera-canvas" class="hidden"></canvas><img id="captured-photo" class="w-full h-72 object-cover rounded-2xl hidden shadow-lg" />
+              <div id="camera-controls" class="hidden mt-5 flex gap-4">
+                <button
+                  onclick="capturePhoto()"
+                  class="flex-1 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white py-4 rounded-2xl font-bold transition flex items-center justify-center gap-2 shadow-lg"
+                >
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2.5"
+                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                    />
+                  </svg>
+                  Ambil Foto
+                </button>
+                <button onclick="stopCamera()" class="bg-slate-500 hover:bg-slate-600 text-white px-5 py-4 rounded-2xl font-bold transition shadow-lg">✕</button>
+              </div>
+              <div id="photo-controls" class="hidden mt-5">
+                <button onclick="retakePhoto()" class="w-full bg-slate-500 hover:bg-slate-600 text-white py-4 rounded-2xl font-bold transition flex items-center justify-center gap-3 shadow-lg">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2.5"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                  Ambil Ulang Foto
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Location Section -->
+          <div class="card-modern p-6">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-600 rounded-xl flex items-center justify-center shadow-lg">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <span class="text-lg font-bold text-slate-800">Lokasi Kehadiran</span>
+            </div>
+            <div id="location-container">
+              <div id="location-loading" class="w-full h-56 bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl flex flex-col items-center justify-center border-3 border-dashed border-red-200">
+                <div class="w-14 h-14 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p class="text-slate-700 font-semibold">Mendapatkan lokasi otomatis...</p>
+              </div>
+              <div id="location-result" class="hidden">
+                <div id="map" class="w-full h-56 rounded-2xl mb-4 map-container shadow-lg"></div>
+                <div class="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-5 border-2 border-slate-200">
+                  <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                      <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      </svg>
+                    </div>
+                    <div class="flex-1">
+                      <p class="text-xs text-slate-500 font-semibold uppercase tracking-wide mb-1">Alamat:</p>
+                      <p id="location-address" class="text-slate-700 font-semibold text-sm leading-relaxed"></p>
+                      <p class="text-xs text-slate-400 mt-2 font-medium" id="location-coords"></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Submit Button -->
+          <button
+            id="submit-btn"
+            onclick="submitAttendance()"
+            disabled
+            class="w-full btn-gradient text-white py-5 rounded-2xl font-black text-lg shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+          >
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Kirim Absensi Sekarang
+          </button>
+        </div>
+      </div>
+
+      <!-- Admin Page -->
+      <div id="page-admin" class="page">
+        <div class="max-w-lg mx-auto px-5 py-8 space-y-8">
+          <!-- Back Button -->
+          <button onclick="showPage('attendance')" class="flex items-center gap-3 text-slate-600 hover:text-slate-800 transition font-semibold">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg
+            ><span>Kembali ke Absensi</span>
+          </button>
+          <!-- Admin Header -->
+          <div class="card-modern p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-slate-300/30 to-slate-200/30 rounded-full blur-3xl"></div>
+            <div class="relative flex items-center gap-4">
+              <div class="w-16 h-16 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl flex items-center justify-center shadow-xl">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                  />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-2xl font-black text-slate-800">Dashboard Admin</h2>
+                <p class="text-slate-600 font-medium">Kelola data guru dan staff</p>
+              </div>
+            </div>
+          </div>
+          <!-- Add Staff Form -->
+          <div class="card-modern p-6">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-10 h-10 bg-gradient-to-br from-slate-600 to-slate-700 rounded-xl flex items-center justify-center shadow-lg">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+              </div>
+              <span class="text-lg font-bold text-slate-800">Tambah Guru/Staff</span>
+            </div>
+            <form id="add-staff-form" onsubmit="addStaff(event)" class="space-y-4">
+              <div>
+                <label for="new-staff-name" class="block text-sm font-bold text-slate-700 mb-2">Nama Lengkap</label>
+                <input
+                  type="text"
+                  id="new-staff-name"
+                  placeholder="Masukkan nama guru/staff"
+                  required
+                  class="w-full p-4 border-3 border-slate-200 rounded-2xl focus:border-slate-500 focus:ring-4 focus:ring-slate-100 transition font-semibold shadow-sm"
+                />
+              </div>
+              <button type="submit" id="add-staff-btn" class="w-full btn-gradient text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Tambah Guru/Staff
+              </button>
+            </form>
+          </div>
+          <!-- Staff List -->
+          <div class="card-modern p-6">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2.5"
+                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
+                </div>
+                <span class="text-lg font-bold text-slate-800">Daftar Guru/Staff</span>
+              </div>
+              <span id="staff-count" class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-xl text-sm font-black shadow-lg">0</span>
+            </div>
+            <div id="staff-list" class="space-y-3"><!-- Empty state will be inserted here --></div>
+          </div>
+          <!-- Attendance Records -->
+          <div class="card-modern p-6">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2.5"
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                    />
+                  </svg>
+                </div>
+                <span class="text-lg font-bold text-slate-800">Rekap Absensi</span>
+              </div>
+              <span id="attendance-count" class="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-2 rounded-xl text-sm font-black shadow-lg">0</span>
+            </div>
+            <!-- Filter -->
+            <div class="mb-5 space-y-3">
+              <div class="grid grid-cols-1 gap-3">
+                <select
+                  id="filter-name"
+                  onchange="filterAttendance()"
+                  class="w-full p-4 border-3 border-slate-200 rounded-2xl focus:border-slate-500 focus:ring-4 focus:ring-slate-100 transition font-semibold shadow-sm bg-white"
+                >
+                  <option value="">🧑‍🏫 Semua Guru/Staff</option>
+                </select>
+                <div class="flex gap-3">
+                  <input
+                    type="date"
+                    id="filter-date"
+                    onchange="filterAttendance()"
+                    class="flex-1 p-4 border-3 border-slate-200 rounded-2xl focus:border-slate-500 focus:ring-4 focus:ring-slate-100 transition font-semibold shadow-sm"
+                  />
+                  <button
+                    onclick="clearFilter()"
+                    class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-6 py-4 rounded-2xl font-bold transition shadow-lg whitespace-nowrap"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+              <p id="filter-info" class="text-sm text-slate-600 font-medium text-center"></p>
+            </div>
+            <div id="attendance-records" class="space-y-3 max-h-96 overflow-y-auto"><!-- Empty state will be inserted here --></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Staff Modal -->
+    <div id="edit-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white/90 backdrop-filter backdrop-blur-xl rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-white/20">
+        <div>
+          <div class="w-20 h-20 bg-gradient-to-br from-slate-600 to-slate-700 rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-xl">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              />
+            </svg>
+          </div>
+          <h3 class="text-2xl font-black text-slate-800 mb-5 text-center">Edit Nama Guru/Staff</h3>
+          <form onsubmit="saveEditStaff(event)">
+            <div class="mb-6">
+              <label for="edit-staff-name" class="block text-sm font-bold text-slate-700 mb-2">Nama Lengkap</label>
+              <input
+                type="text"
+                id="edit-staff-name"
+                required
+                class="w-full p-4 border-3 border-slate-200 rounded-2xl focus:border-slate-500 focus:ring-4 focus:ring-slate-100 transition font-semibold shadow-sm"
+              />
+            </div>
+            <div class="flex gap-4">
+              <button type="button" onclick="closeEditModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 py-4 rounded-2xl font-bold transition shadow-md">Batal</button>
+              <button
+                type="submit"
+                id="save-edit-btn"
+                class="flex-1 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white py-4 rounded-2xl font-bold transition shadow-lg"
+              >
+                Simpan
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white/90 backdrop-filter backdrop-blur-xl rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-white/20">
+        <div class="text-center">
+          <div class="w-20 h-20 bg-gradient-to-br from-red-500 to-rose-600 rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-xl">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+          </div>
+          <h3 class="text-2xl font-black text-slate-800 mb-3">Hapus Data?</h3>
+          <p id="delete-modal-text" class="text-slate-600 mb-7 font-medium leading-relaxed">Apakah Anda yakin ingin menghapus data ini?</p>
+          <div class="flex gap-4">
+            <button onclick="closeDeleteModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 py-4 rounded-2xl font-bold transition shadow-md">Batal</button>
+            <button
+              id="confirm-delete-btn"
+              onclick="confirmDelete()"
+              class="flex-1 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white py-4 rounded-2xl font-bold transition shadow-lg"
+            >
+              Hapus
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[60] hidden flex items-center justify-center p-4">
+      <div class="bg-white/90 backdrop-filter backdrop-blur-xl rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center scale-in border border-white/20">
+        <div class="relative w-32 h-32 mx-auto mb-6">
+          <div class="absolute inset-0 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full animate-pulse opacity-30"></div>
+          <div
+            class="relative w-32 h-32 bg-gradient-to-br from-green-500 via-emerald-600 to-green-700 rounded-full flex items-center justify-center shadow-2xl"
+            style="animation: successPulse 1s ease-out"
+          >
+            <svg class="w-24 h-24" viewbox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="50" cy="50" r="45" stroke="white" stroke-width="4" fill="none" opacity="0.3" />
+              <path class="success-checkmark" d="M25 52 L42 69 L75 31" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+            </svg>
+          </div>
+        </div>
+        <div class="flex items-center justify-center gap-3 mb-3">
+          <h3 class="text-3xl font-black text-slate-800">Berhasil!</h3>
+          <svg class="w-10 h-10" viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" fill="#10b981" stroke="#059669" stroke-width="2" />
+            <path d="M8 12.5 L10.5 15 L16 9.5" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <p class="text-slate-600 font-semibold mb-2">Absensi Anda telah tersimpan</p>
+        <p id="success-details" class="text-sm text-slate-500 leading-relaxed mb-6"></p>
+        <button
+          onclick="closeSuccessModal()"
+          class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 rounded-2xl font-bold transition shadow-lg"
+        >
+          Kembali ke Halaman Utama
+        </button>
+      </div>
+    </div>
+
+    <!-- Submit Confirmation Modal -->
+    <div id="submit-confirmation-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white/90 backdrop-filter backdrop-blur-xl rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-white/20">
+        <div class="text-center">
+          <div class="relative w-24 h-24 mx-auto mb-5">
+            <div class="absolute inset-0 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full animate-pulse opacity-50"></div>
+            <div class="relative w-24 h-24 bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 rounded-full flex items-center justify-center shadow-2xl">
+              <div class="absolute inset-0 bg-gradient-to-t from-orange-800/30 to-transparent rounded-full"></div>
+              <svg class="w-14 h-14 text-white relative z-10" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+          <h3 class="text-2xl font-black text-slate-800 mb-3">Konfirmasi Absensi</h3>
+          <div class="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-5 mb-6 border-2 border-slate-200">
+            <div class="space-y-3 text-left">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-slate-600 to-slate-700 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <p class="text-xs text-slate-500 font-semibold">Nama:</p>
+                  <p id="confirm-name" class="text-slate-800 font-bold"></p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2.5"
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                    />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <p class="text-xs text-slate-500 font-semibold">Status:</p>
+                  <p id="confirm-status" class="text-slate-800 font-bold"></p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <p class="text-xs text-slate-500 font-semibold">Waktu:</p>
+                  <p id="confirm-time" class="text-slate-800 font-bold"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="text-slate-600 mb-7 font-medium leading-relaxed">Pastikan data sudah benar sebelum mengirim absensi</p>
+          <div class="flex gap-4">
+            <button onclick="closeSubmitConfirmation()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 py-4 rounded-2xl font-bold transition shadow-md">Batal</button>
+            <button
+              id="confirm-submit-btn"
+              onclick="confirmSubmitAttendance()"
+              class="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white py-4 rounded-2xl font-bold transition shadow-lg"
+            >
+              Kirim
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Password Modal -->
+    <div id="password-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white/90 backdrop-filter backdrop-blur-xl rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-white/20">
+        <div>
+          <div class="w-20 h-20 bg-gradient-to-br from-slate-600 to-slate-700 rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-xl">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h3 class="text-2xl font-black text-slate-800 mb-3 text-center">Password Admin</h3>
+          <p class="text-slate-600 mb-6 font-medium text-center">Masukkan password untuk akses admin</p>
+          <form onsubmit="checkAdminPassword(event)">
+            <div class="mb-6">
+              <div class="relative">
+                <input
+                  type="password"
+                  id="admin-password-input"
+                  placeholder="Masukkan password"
+                  required
+                  class="w-full p-4 pr-12 border-3 border-slate-200 rounded-2xl focus:border-slate-500 focus:ring-4 focus:ring-slate-100 transition font-semibold shadow-sm text-center"
+                  autofocus
+                />
+                <button
+                  type="button"
+                  onclick="togglePasswordVisibility()"
+                  class="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 text-slate-500 hover:text-slate-700 transition"
+                  title="Show/Hide Password"
+                >
+                  <svg id="password-eye-open" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542 7z"
+                    />
+                  </svg>
+                  <svg id="password-eye-closed" class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <p id="password-error" class="text-red-500 text-sm font-semibold mt-2 hidden">Password salah!</p>
+            </div>
+            <div class="flex gap-4">
+              <button type="button" onclick="closePasswordModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 py-4 rounded-2xl font-bold transition shadow-md">Batal</button>
+              <button
+                type="submit"
+                id="check-password-btn"
+                class="flex-1 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white py-4 rounded-2xl font-bold transition shadow-lg"
+              >
+                Masuk
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="main.js"></script>
+  </body>
+</html>
