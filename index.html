@@ -1,0 +1,825 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Absensi Guru - SMK YPPM TOMO</title>
+
+    <!-- PWA Dynamic Manifest & Theme -->
+    <meta name="theme-color" content="#0F172A" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Absensi YPPM" />
+    <link rel="apple-touch-icon" href="https://iili.io/KjIKMJ9.png" />
+    <link rel="icon" type="image/png" href="https://iili.io/KjIKMJ9.png" />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                navy: "#0F172A",
+                lightNavy: "#1E293B",
+                yellow: "#F59E0B",
+                yellowHover: "#D97706",
+                accentPurple: "#8B5CF6",
+                bgLight: "#F8FAFC",
+              },
+            },
+            borderRadius: {
+              card: "22px",
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- Google Material Symbols & Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+    <!-- External Libraries (SheetJS & jsPDF) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="bg-slate-100 text-slate-800 antialiased min-h-screen pb-28 md:pb-10 selection:bg-brand-yellow selection:text-brand-navy">
+    <div id="appLoadingOverlay" class="fixed inset-0 z-50 bg-brand-navy flex flex-col items-center justify-center p-4 transition-opacity duration-500">
+      <div class="glass-navy p-6 md:p-8 rounded-card max-w-sm w-full text-center space-y-5 border border-slate-700/50 shadow-2xl relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-brand-yellow/10 rounded-full blur-2xl"></div>
+        <img src="https://iili.io/KjIKMJ9.png" alt="Logo SMK YPPM TOMO" class="w-16 h-16 mx-auto object-contain bg-white rounded-full p-2 shadow-lg animate-bounce" />
+        <div>
+          <h3 class="text-white font-extrabold text-base md:text-lg tracking-wider uppercase">SMK YPPM TOMO</h3>
+          <p class="text-xs text-brand-yellow font-medium mt-1" id="loadingStatusText">Menghubungkan ke Server...</p>
+        </div>
+
+        <!-- Progress Bar & Percentage -->
+        <div class="space-y-2">
+          <div class="w-full bg-slate-800 rounded-full h-3 border border-slate-700 overflow-hidden p-0.5 shadow-inner">
+            <div id="loadingProgressBar" class="bg-gradient-to-r from-amber-500 to-brand-yellow h-full rounded-full transition-all duration-300 w-0"></div>
+          </div>
+          <div class="flex justify-between items-center text-[11px] font-bold">
+            <span class="text-slate-400">Sinkronisasi Server</span>
+            <span id="loadingPercentText" class="text-brand-yellow text-sm font-extrabold">0%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <header class="sticky top-0 z-40 bg-brand-navy text-white px-4 md:px-8 py-3 shadow-lg flex items-center justify-between rounded-b-2xl">
+      <div class="flex items-center space-x-3">
+        <img src="https://iili.io/KjIKMJ9.png" alt="Logo SMK YPPM TOMO" class="w-10 h-10 object-contain bg-white rounded-full p-1 shadow" />
+        <div>
+          <h1 class="text-xs md:text-sm font-bold tracking-wider text-brand-yellow uppercase">SMK YPPM TOMO</h1>
+          <p class="text-xs text-slate-300 font-medium" id="headerTeacherName">Pilih Guru</p>
+        </div>
+      </div>
+
+      <!-- DESKTOP TOP NAVIGATION -->
+      <nav class="hidden md:flex items-center space-x-2 bg-slate-800/60 p-1 rounded-xl border border-slate-700">
+        <button onclick="switchTab('dashboard')" id="top-nav-dashboard" class="top-nav-btn px-3 py-1.5 rounded-lg text-xs font-bold text-brand-yellow transition flex items-center space-x-1">
+          <span class="material-symbols-outlined text-base">home</span> <span>Beranda</span>
+        </button>
+        <button onclick="switchTab('absensi')" id="top-nav-absensi" class="top-nav-btn px-3 py-1.5 rounded-lg text-xs font-bold text-slate-300 transition flex items-center space-x-1">
+          <span class="material-symbols-outlined text-base">camera_alt</span> <span>Presensi & Izin</span>
+        </button>
+        <button onclick="switchTab('kalender')" id="top-nav-kalender" class="top-nav-btn px-3 py-1.5 rounded-lg text-xs font-bold text-slate-300 transition flex items-center space-x-1">
+          <span class="material-symbols-outlined text-base">calendar_today</span> <span>Kalender</span>
+        </button>
+        <button onclick="switchTab('profil')" id="top-nav-profil" class="top-nav-btn px-3 py-1.5 rounded-lg text-xs font-bold text-slate-300 transition flex items-center space-x-1">
+          <span class="material-symbols-outlined text-base">person</span> <span>Leaderboard & Profil</span>
+        </button>
+      </nav>
+
+      <div class="flex items-center space-x-2">
+        <button
+          onclick="refreshDataRealtime()"
+          title="Refresh Data Server"
+          class="p-2 rounded-full bg-slate-800/80 text-emerald-400 hover:bg-slate-700 transition flex items-center justify-center border border-slate-700"
+        >
+          <span class="material-symbols-outlined text-xl" id="refreshIcon">sync</span>
+        </button>
+        <button
+          onclick="toggleAdminModal()"
+          title="Dashboard Admin"
+          class="p-2 rounded-full bg-slate-800/80 text-brand-yellow hover:bg-slate-700 transition flex items-center justify-center border border-slate-700"
+        >
+          <span class="material-symbols-outlined text-xl">admin_panel_settings</span>
+        </button>
+        <div id="pwaInstallBtnContainer" class="hidden">
+          <button id="pwaInstallBtn" onclick="installPWA()" class="px-3 py-1.5 rounded-full bg-brand-yellow text-brand-navy font-bold text-xs flex items-center space-x-1 shadow">
+            <span class="material-symbols-outlined text-sm">download</span>
+            <span>Install</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-md sm:max-w-xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 pt-4 md:pt-6">
+      <!-- PAGE: DASHBOARD -->
+      <section id="page-dashboard" class="page-view active space-y-5">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <!-- Welcome Banner -->
+          <div class="md:col-span-2 glass-navy text-white p-5 md:p-6 rounded-card shadow-xl relative overflow-hidden flex flex-col justify-between">
+            <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-brand-yellow/10 rounded-full blur-2xl"></div>
+            <div class="flex items-center space-x-4">
+              <img id="dashAvatar" src="https://iili.io/KjIKMJ9.png" class="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-brand-yellow object-cover bg-white shadow-md flex-shrink-0" />
+              <div class="overflow-hidden">
+                <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-700/60 text-slate-300 border border-slate-600 inline-block" id="dashStatusBadge">Belum Ditemukan</span>
+                <h2 class="text-lg md:text-xl font-bold mt-1 truncate" id="dashTeacherName">Silakan Pilih Nama Guru</h2>
+                <p class="text-xs md:text-sm text-slate-300 flex items-center mt-1">
+                  <span class="material-symbols-outlined text-sm mr-1 text-brand-yellow">schedule</span>
+                  <span id="liveClock">00:00:00 WIB</span>
+                </p>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-800 flex justify-between items-center text-xs text-slate-400">
+              <span>Jam Kerja: <strong id="workHoursDisplay" class="text-white">07:00 - 15:00 WIB</strong></span>
+              <span id="dashCurrentDateDesktop" class="hidden md:inline font-semibold text-slate-300">-</span>
+            </div>
+          </div>
+
+          <!-- Ringkasan Hari Ini -->
+          <div class="glass-card p-5 rounded-card space-y-3 flex flex-col justify-between">
+            <div class="flex justify-between items-center border-b pb-2 border-slate-200">
+              <h3 class="font-bold text-slate-800 text-sm flex items-center"><span class="material-symbols-outlined text-brand-yellow mr-1">today</span> Presensi Hari Ini</h3>
+              <span class="text-xs text-slate-500 font-medium" id="dashCurrentDate">-</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3 text-center my-auto">
+              <div class="bg-emerald-50 p-3.5 rounded-xl border border-emerald-100">
+                <span class="text-xs text-emerald-600 font-medium">Jam Masuk</span>
+                <p class="text-lg md:text-xl font-bold text-emerald-800" id="dashTimeIn">--:--</p>
+              </div>
+              <div class="bg-rose-50 p-3.5 rounded-xl border border-rose-100">
+                <span class="text-xs text-rose-600 font-medium">Jam Pulang</span>
+                <p class="text-lg md:text-xl font-bold text-rose-800" id="dashTimeOut">--:--</p>
+              </div>
+            </div>
+            <button
+              onclick="switchTab('absensi')"
+              class="w-full py-3 rounded-xl bg-gradient-to-r from-brand-navy to-brand-lightNavy text-brand-yellow font-bold text-xs md:text-sm shadow-md hover:shadow-lg transition flex items-center justify-center space-x-2 ripple border border-brand-yellow/20"
+            >
+              <span class="material-symbols-outlined text-lg">photo_camera</span>
+              <span>Buka Kamera Absensi / Izin</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Statistik Bulanan -->
+        <div class="space-y-2">
+          <div class="flex justify-between items-center px-1">
+            <h4 class="text-xs md:text-sm font-bold text-slate-600 uppercase tracking-wider">Statistik Bulan Ini</h4>
+            <span class="text-xs text-slate-400 font-medium" id="statMonthLabel">--</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="glass-card p-4 rounded-2xl text-center">
+              <span class="material-symbols-outlined text-emerald-500 text-2xl">check_circle</span>
+              <p class="text-xs text-slate-500 mt-1 font-medium">Hadir</p>
+              <p class="text-lg md:text-xl font-bold text-slate-800" id="statHadir">0</p>
+            </div>
+            <div class="glass-card p-4 rounded-2xl text-center">
+              <span class="material-symbols-outlined text-amber-500 text-2xl">history_toggle_off</span>
+              <p class="text-xs text-slate-500 mt-1 font-medium">Telat</p>
+              <p class="text-lg md:text-xl font-bold text-slate-800" id="statTelat">0</p>
+            </div>
+            <div class="glass-card p-4 rounded-2xl text-center">
+              <span class="material-symbols-outlined text-brand-accentPurple text-2xl">assignment_late</span>
+              <p class="text-xs text-slate-500 mt-1 font-medium">Izin</p>
+              <p class="text-lg md:text-xl font-bold text-slate-800" id="statIzin">0</p>
+            </div>
+            <div class="glass-card p-4 rounded-2xl text-center">
+              <span class="material-symbols-outlined text-rose-500 text-2xl">cancel</span>
+              <p class="text-xs text-slate-500 mt-1 font-medium">Alpha</p>
+              <p class="text-lg md:text-xl font-bold text-slate-800" id="statAlpha">0</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="page-absensi" class="page-view space-y-4">
+        <div class="text-center mb-2">
+          <h2 class="text-lg md:text-xl font-bold text-brand-navy">Form Presensi & Pengajuan Izin Guru</h2>
+          <p class="text-xs md:text-sm text-slate-500">Pilih status presensi atau ajukan izin langsung di sini</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- CARD 1: IDENTITAS & STATUS -->
+          <div class="space-y-4">
+            <div class="glass-card p-4 md:p-5 rounded-card space-y-3">
+              <div class="flex items-center space-x-2 text-brand-navy border-b pb-2">
+                <span class="material-symbols-outlined text-brand-yellow">badge</span>
+                <h3 class="font-bold text-sm">1. Identitas Guru</h3>
+              </div>
+              <div class="flex items-center space-x-3">
+                <img id="formAvatar" src="https://iili.io/KjIKMJ9.png" class="w-12 h-12 rounded-full border-2 border-brand-yellow object-cover bg-white flex-shrink-0" />
+                <div class="flex-1 min-w-0">
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih Nama Guru *</label>
+                  <select
+                    id="selectGuru"
+                    onchange="onSelectGuruChange(this.value)"
+                    class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs md:text-sm font-medium text-slate-800 focus:outline-none focus:border-brand-navy truncate"
+                  >
+                    <option value="">-- Memuat Data Server... --</option>
+                  </select>
+                </div>
+              </div>
+              <div class="flex items-center justify-between pt-1">
+                <label class="flex items-center text-xs text-slate-600 cursor-pointer">
+                  <input type="checkbox" id="rememberMe" onchange="toggleRememberMe(this.checked)" class="rounded text-brand-navy focus:ring-brand-yellow mr-2" />
+                  Ingat di perangkat ini
+                </label>
+                <span id="onlineStatusBadge" class="text-[10px] md:text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 flex items-center">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1 animate-pulse"></span> Online
+                </span>
+              </div>
+            </div>
+
+            <div class="glass-card p-4 md:p-5 rounded-card space-y-3">
+              <div class="flex items-center space-x-2 text-brand-navy border-b pb-2">
+                <span class="material-symbols-outlined text-brand-yellow">rule</span>
+                <h3 class="font-bold text-sm">2. Status Kehadiran / Izin</h3>
+              </div>
+              <div class="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onclick="setAttendanceStatus('Masuk')"
+                  id="btnStatMasuk"
+                  class="py-2.5 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center space-y-1 bg-emerald-600 text-white border-emerald-600 shadow"
+                >
+                  <span class="material-symbols-outlined text-lg">login</span>
+                  <span>Masuk</span>
+                </button>
+                <button
+                  type="button"
+                  onclick="setAttendanceStatus('Pulang')"
+                  id="btnStatPulang"
+                  class="py-2.5 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center space-y-1 bg-white text-slate-600 border-slate-200"
+                >
+                  <span class="material-symbols-outlined text-lg">logout</span>
+                  <span>Pulang</span>
+                </button>
+                <button
+                  type="button"
+                  onclick="setAttendanceStatus('Izin')"
+                  id="btnStatIzin"
+                  class="py-2.5 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center space-y-1 bg-white text-slate-600 border-slate-200"
+                >
+                  <span class="material-symbols-outlined text-lg">assignment_ind</span>
+                  <span>Izin / Tugas</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- CARD DETAIL IZIN (Dinamis Muncul Saat Status 'Izin' Dipilih) -->
+            <div id="izinFormSection" class="glass-card p-4 md:p-5 rounded-card space-y-3 border-2 border-brand-accentPurple/40 hidden">
+              <div class="flex items-center space-x-2 text-brand-accentPurple border-b pb-2">
+                <span class="material-symbols-outlined text-brand-accentPurple">edit_note</span>
+                <h3 class="font-bold text-sm">Detail Pengajuan Izin</h3>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Jenis Izin *</label>
+                <select id="izinType" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800">
+                  <option value="Sakit">Sakit</option>
+                  <option value="Izin Penting">Izin Penting</option>
+                  <option value="Dinas Luar">Dinas Luar / Tugas Sekolah</option>
+                  <option value="Cuti">Cuti</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal Mulai s/d Selesai *</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <input type="date" id="izinStartDate" class="bg-slate-50 border border-slate-300 rounded-xl px-2 py-2 text-xs font-medium" />
+                  <input type="date" id="izinEndDate" class="bg-slate-50 border border-slate-300 rounded-xl px-2 py-2 text-xs font-medium" />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Keterangan / Alasan Izin *</label>
+                <textarea
+                  id="izinNote"
+                  rows="2"
+                  placeholder="Tuliskan alasan pengajuan izin..."
+                  class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 text-xs focus:outline-none focus:border-brand-navy"
+                ></textarea>
+              </div>
+            </div>
+
+            <!-- CARD INFORMASI WAKTU -->
+            <div class="glass-card p-4 rounded-card space-y-2">
+              <div class="flex justify-between items-center text-xs md:text-sm">
+                <span class="text-slate-500">Jam Kerja Sekolah:</span>
+                <span class="font-bold text-slate-800" id="workHoursInfo">07:00 - 15:00 WIB</span>
+              </div>
+              <div class="flex justify-between items-center text-xs md:text-sm">
+                <span class="text-slate-500">Status Waktu:</span>
+                <span class="font-bold px-2 py-0.5 rounded-md text-xs bg-emerald-100 text-emerald-800" id="attendanceTimeStatus">Tepat Waktu</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <!-- CARD CAMERA -->
+            <div class="glass-card p-4 md:p-5 rounded-card space-y-3">
+              <div class="flex items-center justify-between border-b pb-2">
+                <div class="flex items-center space-x-2 text-brand-navy">
+                  <span class="material-symbols-outlined text-brand-yellow">photo_camera</span>
+                  <h3 class="font-bold text-sm">3. Foto Selfie Realtime / Bukti</h3>
+                </div>
+                <span id="cameraTypeBadge" class="text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">Kamera Depan</span>
+              </div>
+
+              <div class="relative w-full aspect-video bg-slate-900 rounded-xl overflow-hidden shadow-inner flex items-center justify-center border border-slate-300">
+                <video id="cameraVideo" autoplay playsinline class="w-full h-full object-cover hidden"></video>
+                <canvas id="cameraCanvas" class="hidden"></canvas>
+                <img id="photoPreview" class="w-full h-full object-cover hidden" />
+
+                <div id="cameraPlaceholder" class="text-center p-4">
+                  <span class="material-symbols-outlined text-4xl text-slate-400">add_a_photo</span>
+                  <p class="text-xs text-slate-400 mt-1">Kamera belum diaktifkan</p>
+                </div>
+              </div>
+
+              <div class="flex space-x-2">
+                <button
+                  type="button"
+                  onclick="startCamera()"
+                  id="btnStartCamera"
+                  class="flex-1 py-2 bg-brand-navy text-brand-yellow text-xs font-bold rounded-xl flex items-center justify-center space-x-1 shadow"
+                >
+                  <span class="material-symbols-outlined text-sm">videocam</span>
+                  <span>Buka Kamera</span>
+                </button>
+                <button
+                  type="button"
+                  onclick="takePhoto()"
+                  id="btnTakePhoto"
+                  disabled
+                  class="flex-1 py-2 bg-brand-yellow text-brand-navy text-xs font-bold rounded-xl flex items-center justify-center space-x-1 shadow opacity-50 cursor-not-allowed"
+                >
+                  <span class="material-symbols-outlined text-sm">camera</span>
+                  <span>Ambil Foto</span>
+                </button>
+                <button
+                  type="button"
+                  onclick="resetPhoto()"
+                  id="btnResetPhoto"
+                  class="hidden py-2 px-3 bg-rose-100 text-rose-700 text-xs font-bold rounded-xl flex items-center justify-center space-x-1"
+                >
+                  <span class="material-symbols-outlined text-sm">refresh</span>
+                  <span>Ulangi</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- CARD 4: LOKASI GEOLOCATION -->
+            <div class="glass-card p-4 md:p-5 rounded-card space-y-3">
+              <div class="flex items-center justify-between border-b pb-2">
+                <div class="flex items-center space-x-2 text-brand-navy">
+                  <span class="material-symbols-outlined text-brand-yellow">pin_drop</span>
+                  <h3 class="font-bold text-sm">4. Lokasi Realtime GPS</h3>
+                </div>
+                <button type="button" onclick="getCurrentLocation()" class="text-xs font-bold text-brand-accentPurple flex items-center">
+                  <span class="material-symbols-outlined text-sm mr-0.5">my_location</span> Refresh Lokasi
+                </button>
+              </div>
+
+              <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
+                <p class="font-semibold text-slate-800" id="locAddress">Mencari lokasi GPS...</p>
+                <p class="text-slate-500 text-[10px]" id="locCoords">Lat: - | Lng: -</p>
+              </div>
+
+              <div class="w-full h-28 bg-slate-200 rounded-xl overflow-hidden border border-slate-300 relative shadow-inner">
+                <iframe id="mapIframe" class="w-full h-full border-0" loading="lazy" src="about:blank"></iframe>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBMIT BUTTON -->
+        <button
+          type="button"
+          onclick="openConfirmationModal()"
+          class="w-full py-4 rounded-card bg-brand-yellow text-brand-navy font-bold text-base shadow-xl hover:bg-brand-yellowHover transition flex items-center justify-center space-x-2 ripple border border-amber-300"
+        >
+          <span class="material-symbols-outlined text-2xl">send</span>
+          <span id="btnSubmitText">KIRIM PRESENSI KE SERVER</span>
+        </button>
+      </section>
+
+      <section id="page-kalender" class="page-view space-y-4">
+        <div class="glass-card p-4 md:p-6 rounded-card space-y-4">
+          <div class="flex justify-between items-center border-b pb-3">
+            <button onclick="changeCalMonth(-1)" class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700">
+              <span class="material-symbols-outlined text-sm">chevron_left</span>
+            </button>
+            <div class="text-center">
+              <h2 class="text-sm md:text-base font-bold text-brand-navy flex items-center justify-center">
+                <span class="material-symbols-outlined text-brand-yellow text-base mr-1">calendar_month</span>
+                <span id="calendarMonthLabel">-- 2026</span>
+              </h2>
+              <p class="text-[10px] md:text-xs text-slate-400 font-medium">Kesesuaian Data Realtime Server</p>
+            </div>
+            <button onclick="changeCalMonth(1)" class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700">
+              <span class="material-symbols-outlined text-sm">chevron_right</span>
+            </button>
+          </div>
+
+          <!-- Kalender Legend -->
+          <div class="grid grid-cols-5 gap-1 text-[10px] md:text-xs font-semibold text-center bg-slate-50 p-2 rounded-xl">
+            <span class="flex items-center justify-center"><span class="w-2 h-2 rounded-full bg-emerald-500 mr-1"></span> Hadir</span>
+            <span class="flex items-center justify-center"><span class="w-2 h-2 rounded-full bg-amber-500 mr-1"></span> Telat</span>
+            <span class="flex items-center justify-center"><span class="w-2 h-2 rounded-full bg-brand-accentPurple mr-1"></span> Izin</span>
+            <span class="flex items-center justify-center"><span class="w-2 h-2 rounded-full bg-rose-500 mr-1"></span> Alpha</span>
+            <span class="flex items-center justify-center"><span class="w-2 h-2 rounded-full bg-sky-400 mr-1"></span> Libur</span>
+          </div>
+
+          <!-- Grid Header Kalender -->
+          <div class="grid grid-cols-7 gap-1 text-center font-bold text-[11px] md:text-xs text-slate-500 pt-1">
+            <div class="text-rose-500">Min</div>
+            <div>Sen</div>
+            <div>Sel</div>
+            <div>Rab</div>
+            <div>Kam</div>
+            <div>Jum</div>
+            <div class="text-sky-600">Sab</div>
+          </div>
+
+          <!-- Dynamic Grid Kalender -->
+          <div id="calendarGrid" class="grid grid-cols-7 gap-1.5 pt-1">
+            <!-- Filled dynamically -->
+          </div>
+        </div>
+
+        <!-- Detail Card per Tanggal Klik -->
+        <div id="calDateDetailCard" class="glass-card p-4 rounded-card space-y-2 hidden max-w-md mx-auto">
+          <div class="flex justify-between items-center border-b pb-2">
+            <span class="text-xs font-bold text-slate-800" id="calDetailDateStr">Detail Tanggal</span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" id="calDetailBadge">-</span>
+          </div>
+          <div class="text-xs space-y-1 text-slate-600">
+            <p id="calDetailIn">Jam Masuk: -</p>
+            <p id="calDetailOut">Jam Pulang: -</p>
+            <p id="calDetailNote">Keterangan: -</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="page-profil" class="page-view space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Card Profil Guru -->
+          <div class="glass-card p-6 rounded-card text-center space-y-4">
+            <img id="profileAvatar" src="https://iili.io/KjIKMJ9.png" class="w-24 h-24 rounded-full mx-auto border-4 border-brand-yellow shadow-lg object-cover bg-white" />
+            <div>
+              <h2 class="text-lg font-bold text-brand-navy" id="profileName">Nama Guru</h2>
+              <p class="text-xs text-slate-500" id="profileNip">NIP / NUPTK: -</p>
+            </div>
+            <div class="pt-3 border-t border-slate-200 flex justify-around text-center">
+              <div>
+                <p class="text-[10px] text-slate-400 font-semibold uppercase">Mata Pelajaran</p>
+                <p class="text-xs md:text-sm font-bold text-slate-700" id="profileMapel">-</p>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-400 font-semibold uppercase">Kepegawaian</p>
+                <p class="text-xs md:text-sm font-bold text-slate-700" id="profileStatus">-</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Leaderboard Kehadiran Realtime (Paling Pagi / Terajin) -->
+          <div class="glass-card p-4 md:p-5 rounded-card space-y-3">
+            <div class="flex justify-between items-center border-b pb-2">
+              <div>
+                <h3 class="font-bold text-brand-navy text-sm flex items-center">
+                  <span class="material-symbols-outlined text-brand-yellow mr-1">workspace_premium</span>
+                  Leaderboard Guru Paling Pagi
+                </h3>
+                <p class="text-[10px] text-slate-500 font-medium">Diurutkan berdasarkan yang paling pagi jam masuknya</p>
+              </div>
+              <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-md">Top Terajin</span>
+            </div>
+            <div id="leaderboardList" class="space-y-2 max-h-96 overflow-y-auto">
+              <p class="text-xs text-slate-400 text-center py-3">Memuat statistik jam masuk dari Server...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-brand-navy/95 backdrop-blur-md border-t border-slate-800 max-w-lg mx-auto rounded-t-2xl px-2 py-2 shadow-2xl">
+      <div class="flex justify-around items-center">
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn active flex flex-col items-center py-1 px-3 rounded-xl text-brand-yellow transition">
+          <span class="material-symbols-outlined text-xl">home</span>
+          <span class="text-[10px] font-bold mt-0.5">Beranda</span>
+        </button>
+        <button onclick="switchTab('absensi')" id="nav-absensi" class="nav-btn flex flex-col items-center py-1 px-3 rounded-xl text-slate-400 transition">
+          <span class="material-symbols-outlined text-xl">camera_alt</span>
+          <span class="text-[10px] font-bold mt-0.5">Presensi</span>
+        </button>
+        <button onclick="switchTab('kalender')" id="nav-kalender" class="nav-btn flex flex-col items-center py-1 px-3 rounded-xl text-slate-400 transition">
+          <span class="material-symbols-outlined text-xl">calendar_today</span>
+          <span class="text-[10px] font-bold mt-0.5">Kalender</span>
+        </button>
+        <button onclick="switchTab('profil')" id="nav-profil" class="nav-btn flex flex-col items-center py-1 px-3 rounded-xl text-slate-400 transition">
+          <span class="material-symbols-outlined text-xl">person</span>
+          <span class="text-[10px] font-bold mt-0.5">Leaderboard</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- MODAL 1: CONFIRMATION ABSENCE -->
+    <div id="confirmModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+      <div class="glass-card w-full max-w-sm rounded-card p-5 space-y-4 shadow-2xl bg-white">
+        <h3 class="font-bold text-slate-800 text-base border-b pb-2 flex items-center"><span class="material-symbols-outlined text-brand-yellow mr-1">fact_check</span> Konfirmasi Absensi / Izin</h3>
+
+        <div class="space-y-2 text-xs">
+          <div class="flex justify-between"><span class="text-slate-500">Nama:</span> <span class="font-bold text-slate-800" id="cnfName">-</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Status:</span> <span class="font-bold text-emerald-600" id="cnfStatus">-</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Waktu:</span> <span class="font-bold text-slate-800" id="cnfTime">-</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Lokasi:</span> <span class="font-semibold text-slate-700 text-right truncate w-40" id="cnfLocation">-</span></div>
+        </div>
+
+        <div class="w-full h-32 rounded-xl overflow-hidden bg-slate-100 border">
+          <img id="cnfPhoto" class="w-full h-full object-cover" />
+        </div>
+
+        <div class="flex space-x-2 pt-2">
+          <button type="button" onclick="closeConfirmModal()" class="flex-1 py-2.5 bg-slate-200 text-slate-700 font-bold text-xs rounded-xl">Batal</button>
+          <button type="button" onclick="processSubmitAbsence()" class="flex-1 py-2.5 bg-brand-yellow text-brand-navy font-bold text-xs rounded-xl shadow ripple">Kirim Ke Server</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 2: PHOTO PREVIEW MODAL FOR ADMIN -->
+    <div id="adminPhotoModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+      <div class="relative w-full max-w-xs bg-white rounded-card overflow-hidden p-3 text-center space-y-3">
+        <div class="flex justify-between items-center border-b pb-2">
+          <h4 class="font-bold text-xs text-slate-800" id="admPhotoTitle">Foto Bukti Selfie</h4>
+          <button onclick="closeAdminPhotoModal()" class="text-slate-500 font-bold">✕</button>
+        </div>
+        <div class="w-full aspect-square bg-slate-100 rounded-xl overflow-hidden border">
+          <img id="admPhotoImg" class="w-full h-full object-cover" />
+        </div>
+        <button onclick="closeAdminPhotoModal()" class="w-full py-2 bg-brand-navy text-brand-yellow font-bold text-xs rounded-xl">Tutup</button>
+      </div>
+    </div>
+
+    <!-- MODAL ADMIN -->
+    <div id="adminModal" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-md hidden overflow-y-auto p-4">
+      <div class="max-w-4xl mx-auto bg-white rounded-card p-5 md:p-6 space-y-5 shadow-2xl my-6">
+        <!-- Admin Header -->
+        <div class="flex justify-between items-center border-b pb-3">
+          <div class="flex items-center space-x-2">
+            <span class="material-symbols-outlined text-brand-yellow text-2xl">admin_panel_settings</span>
+            <h2 class="font-bold text-lg md:text-xl text-brand-navy">Dashboard Monitoring Admin</h2>
+          </div>
+          <button onclick="toggleAdminModal()" class="p-1 rounded-full text-slate-400 hover:text-slate-800">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <!-- Admin Login View -->
+        <div id="adminLoginSection" class="space-y-4 py-4 text-center">
+          <p class="text-xs md:text-sm text-slate-500">Masukkan Password Administrator untuk mengakses panel monitoring.</p>
+          <input
+            type="password"
+            id="adminPasswordInput"
+            placeholder="Password Admin"
+            class="w-full max-w-xs mx-auto block bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-center font-bold"
+          />
+          <button onclick="loginAdmin()" class="px-6 py-2.5 bg-brand-navy text-brand-yellow font-bold text-xs md:text-sm rounded-xl shadow">Masuk Admin</button>
+        </div>
+
+        <!-- Admin Panel Content -->
+        <div id="adminContentSection" class="hidden space-y-5">
+          <!-- Monitoring Realtime Hari Ini -->
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <h3 class="text-xs md:text-sm font-bold text-slate-700 uppercase tracking-wider">Monitoring Presensi Hari Ini</h3>
+              <button onclick="loadRealtimeData()" class="text-xs text-emerald-600 font-bold flex items-center"><span class="material-symbols-outlined text-xs mr-0.5">sync</span> Refresh Data</button>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
+              <div class="bg-blue-50 p-3 rounded-xl border border-blue-100">
+                <span class="text-slate-500 text-[10px] md:text-xs">Total Guru</span>
+                <p class="text-base md:text-lg font-bold text-blue-800" id="admTotalGuru">0</p>
+              </div>
+              <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100">
+                <span class="text-slate-500 text-[10px] md:text-xs">Sudah Masuk</span>
+                <p class="text-base md:text-lg font-bold text-emerald-800" id="admHadirToday">0</p>
+              </div>
+              <div class="bg-amber-50 p-3 rounded-xl border border-amber-100">
+                <span class="text-slate-500 text-[10px] md:text-xs">Terlambat</span>
+                <p class="text-base md:text-lg font-bold text-amber-800" id="admTelatToday">0</p>
+              </div>
+              <div class="bg-purple-50 p-3 rounded-xl border border-purple-100">
+                <span class="text-slate-500 text-[10px] md:text-xs">Izin/Sakit</span>
+                <p class="text-base md:text-lg font-bold text-purple-800" id="admIzinToday">0</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Admin Tabs Navigation -->
+          <div class="flex border-b text-xs md:text-sm font-bold space-x-4 overflow-x-auto">
+            <button onclick="switchAdminTab('rekap')" class="pb-2 border-b-2 border-brand-navy text-brand-navy whitespace-nowrap" id="admTabBtnRekap">Riwayat & Rekap</button>
+            <button onclick="switchAdminTab('import')" class="pb-2 text-slate-400 whitespace-nowrap" id="admTabBtnImport">Import Excel Data Lama</button>
+            <button onclick="switchAdminTab('guru')" class="pb-2 text-slate-400 whitespace-nowrap" id="admTabBtnGuru">Kelola Data Guru</button>
+            <button onclick="switchAdminTab('jam')" class="pb-2 text-slate-400 whitespace-nowrap" id="admTabBtnJam">Pengaturan Jam</button>
+            <button onclick="switchAdminTab('config')" class="pb-2 text-slate-400 whitespace-nowrap" id="admTabBtnConfig">URL Apps Script</button>
+          </div>
+
+          <!-- TAB ADMIN 1: RIWAYAT & REKAP ABSENSI TERFILTER -->
+          <div id="admTabRekap" class="space-y-3 text-xs">
+            <!-- Filter Panel -->
+            <div class="bg-slate-50 p-3 md:p-4 rounded-xl border space-y-3">
+              <div class="flex justify-between items-center flex-wrap gap-2">
+                <h4 class="font-bold text-slate-700 text-xs md:text-sm">Filter & Export Data Presensi</h4>
+                <button onclick="clearRekapDataConfirm()" class="px-2.5 py-1 bg-rose-100 text-rose-700 font-bold text-[10px] md:text-xs rounded-lg flex items-center space-x-1">
+                  <span class="material-symbols-outlined text-xs">delete_sweep</span>
+                  <span>Kosongkan Rekap Server</span>
+                </button>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+                <div>
+                  <label class="block text-[10px] md:text-xs font-semibold text-slate-500 mb-0.5">Filter Nama Guru</label>
+                  <select id="filterGuruSelect" onchange="renderAdminRekapTable()" class="w-full p-2 border rounded-lg bg-white text-xs">
+                    <option value="ALL">-- Semua Guru --</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[10px] md:text-xs font-semibold text-slate-500 mb-0.5">Filter Status</label>
+                  <select id="filterStatusSelect" onchange="renderAdminRekapTable()" class="w-full p-2 border rounded-lg bg-white text-xs">
+                    <option value="ALL">-- Semua Status --</option>
+                    <option value="Masuk">Masuk</option>
+                    <option value="Pulang">Pulang</option>
+                    <option value="Terlambat">Terlambat</option>
+                    <option value="Izin">Izin / Sakit</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[10px] md:text-xs font-semibold text-slate-500 mb-0.5">Pilih Bulan</label>
+                  <select id="filterMonthSelect" onchange="renderAdminRekapTable()" class="w-full p-2 border rounded-lg bg-white text-xs">
+                    <option value="ALL">-- Semua Bulan --</option>
+                    <option value="0">Januari</option>
+                    <option value="1">Februari</option>
+                    <option value="2">Maret</option>
+                    <option value="3">April</option>
+                    <option value="4">Mei</option>
+                    <option value="5">Juni</option>
+                    <option value="6">Juli</option>
+                    <option value="7">Agustus</option>
+                    <option value="8">September</option>
+                    <option value="9">Oktober</option>
+                    <option value="10">November</option>
+                    <option value="11">Desember</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[10px] md:text-xs font-semibold text-slate-500 mb-0.5">Pilih Tahun</label>
+                  <input type="number" id="filterYearInput" value="2026" onchange="renderAdminRekapTable()" class="w-full p-2 border rounded-lg bg-white text-xs" />
+                </div>
+              </div>
+
+              <!-- Action Buttons for Export -->
+              <div class="flex space-x-2 pt-1">
+                <button onclick="exportDataExcel()" class="flex-1 py-2 bg-emerald-600 text-white font-bold text-xs rounded-lg flex items-center justify-center space-x-1 shadow hover:bg-emerald-700">
+                  <span class="material-symbols-outlined text-sm">table_chart</span>
+                  <span>Export Excel (+ Ringkasan)</span>
+                </button>
+                <button onclick="exportDataPDF()" class="flex-1 py-2 bg-rose-600 text-white font-bold text-xs rounded-lg flex items-center justify-center space-x-1 shadow hover:bg-rose-700">
+                  <span class="material-symbols-outlined text-sm">picture_as_pdf</span>
+                  <span>Export PDF (+ Ringkasan)</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Tabel Riwayat Realtime -->
+            <div class="overflow-x-auto border rounded-xl bg-white max-h-80 overflow-y-auto">
+              <table class="w-full text-left text-[11px] md:text-xs min-w-[500px]">
+                <thead class="bg-slate-100 font-bold border-b sticky top-0">
+                  <tr>
+                    <th class="p-2">Waktu</th>
+                    <th class="p-2">Nama Guru</th>
+                    <th class="p-2">Status</th>
+                    <th class="p-2">Lokasi/Alamat</th>
+                    <th class="p-2 text-center">Foto</th>
+                  </tr>
+                </thead>
+                <tbody id="adminRekapTableBody">
+                  <tr>
+                    <td colspan="5" class="p-4 text-center text-slate-400">Memuat data riwayat dari Server...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- TAB ADMIN 2: IMPORT EXCEL DATA LAMA -->
+          <div id="admTabImport" class="hidden space-y-4 text-xs">
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200 space-y-3">
+              <div class="flex items-center space-x-2 text-blue-900 font-bold text-sm">
+                <span class="material-symbols-outlined text-blue-600">upload_file</span>
+                <h4>Import & Sinkronkan Data Absensi Lama (Format Excel)</h4>
+              </div>
+              <p class="text-slate-600 leading-relaxed">
+                Fitur ini digunakan untuk memasukkan data presensi guru terdahulu agar dapat tersinkronisasi sempurna dengan sistem dan leaderboard kedisiplinan ini.
+              </p>
+
+              <div class="flex flex-wrap gap-2 pt-1">
+                <button onclick="downloadExcelTemplate()" class="px-3 py-2 bg-slate-800 text-brand-yellow font-bold rounded-lg flex items-center space-x-1 text-xs shadow">
+                  <span class="material-symbols-outlined text-sm">download</span>
+                  <span>1. Unduh Template Excel (.xlsx)</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-xl border space-y-3">
+              <h5 class="font-bold text-slate-800 text-xs">2. Unggah File Excel Data Lama Anda</h5>
+              <div class="flex items-center space-x-2">
+                <input
+                  type="file"
+                  id="excelFileInput"
+                  accept=".xlsx, .xls, .csv"
+                  class="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-brand-navy file:text-brand-yellow hover:file:bg-slate-800"
+                />
+                <button onclick="processExcelUpload()" class="px-4 py-2 bg-emerald-600 text-white font-bold rounded-xl text-xs flex items-center space-x-1 shadow hover:bg-emerald-700 flex-shrink-0">
+                  <span class="material-symbols-outlined text-sm">cloud_upload</span>
+                  <span>Import Data</span>
+                </button>
+              </div>
+              <p class="text-[10px] text-slate-400">Format kolom yang didukung: <strong>Tanggal (YYYY-MM-DD), Jam (HH:mm), Nama Guru, Status (Masuk/Pulang/Izin), Keterangan</strong>.</p>
+            </div>
+          </div>
+
+          <!-- TAB ADMIN 3: KELOLA GURU -->
+          <div id="admTabGuru" class="hidden space-y-3">
+            <div class="bg-slate-50 p-3 md:p-4 rounded-xl border text-xs space-y-2">
+              <h4 class="font-bold text-slate-700">Tambah Guru Baru</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+                <input type="text" id="addGuruNama" placeholder="Nama Lengkap Guru" class="p-2 border rounded-lg text-xs" />
+                <input type="text" id="addGuruNip" placeholder="NIP / NUPTK" class="p-2 border rounded-lg text-xs" />
+                <input type="text" id="addGuruMapel" placeholder="Mata Pelajaran" class="p-2 border rounded-lg text-xs" />
+                <select id="addGuruStatus" class="p-2 border rounded-lg text-xs">
+                  <option value="GTY">GTY</option>
+                  <option value="GTT">GTT</option>
+                  <option value="PNS">PNS</option>
+                </select>
+              </div>
+              <button onclick="addGuruSubmit()" class="w-full py-2 bg-emerald-600 text-white font-bold rounded-lg text-xs">Simpan Guru Ke Server</button>
+            </div>
+
+            <div class="overflow-x-auto border rounded-xl">
+              <table class="w-full text-left text-xs min-w-[400px]">
+                <thead class="bg-slate-100 font-bold border-b">
+                  <tr>
+                    <th class="p-2">Nama</th>
+                    <th class="p-2">Mapel</th>
+                    <th class="p-2">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="adminGuruTableBody">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- TAB ADMIN 4: JAM KERJA -->
+          <div id="admTabJam" class="hidden space-y-3 text-xs">
+            <div class="bg-slate-50 p-3 md:p-4 rounded-xl border space-y-2 max-w-md mx-auto">
+              <label class="block font-bold">Jam Masuk (Format HH:mm)</label>
+              <input type="time" id="cfgJamMasuk" value="07:00" class="p-2 border rounded-lg w-full text-xs" />
+              <label class="block font-bold">Batas Terlambat (Format HH:mm)</label>
+              <input type="time" id="cfgJamTerlambat" value="07:15" class="p-2 border rounded-lg w-full text-xs" />
+              <label class="block font-bold">Jam Pulang (Format HH:mm)</label>
+              <input type="time" id="cfgJamPulang" value="15:00" class="p-2 border rounded-lg w-full text-xs" />
+              <button onclick="saveConfigJam()" class="w-full py-2 bg-brand-navy text-brand-yellow font-bold rounded-lg text-xs">Simpan Pengaturan Jam</button>
+            </div>
+          </div>
+
+          <!-- TAB ADMIN 5: CONFIGURATION URL GAS -->
+          <div id="admTabConfig" class="hidden space-y-3 text-xs">
+            <div class="bg-slate-50 p-3 md:p-4 rounded-xl border space-y-2">
+              <label class="block font-bold text-slate-800">URL Google Apps Script Web App (Backend Server)</label>
+              <input type="text" id="gasUrlInput" placeholder="https://script.google.com/macros/s/.../exec" class="p-2 border rounded-lg w-full font-mono text-[11px]" />
+              <p class="text-[10px] text-slate-500">Ganti URL ini jika Anda menautkan server backend baru.</p>
+              <button onclick="saveGasUrlConfig()" class="w-full py-2 bg-brand-navy text-brand-yellow font-bold rounded-lg text-xs">Simpan URL & Reload Data</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastContainer" class="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-xs space-y-2 pointer-events-none px-4"></div>
+
+    <script src="main.js"></script>
+  </body>
+</html>
